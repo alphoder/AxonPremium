@@ -59,7 +59,7 @@ export default function ModelViewer({
     if (!loaded || !containerRef.current) return;
 
     const arAttrs = arEnabled
-      ? `ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" scale="0.01 0.01 0.01"`
+      ? `ar ar-modes="webxr scene-viewer quick-look" ar-scale="auto" ar-placement="floor"`
       : "";
 
     containerRef.current.innerHTML = `
@@ -82,7 +82,7 @@ export default function ModelViewer({
         interaction-prompt-threshold="3000"
         loading="eager"
         ${arAttrs}
-        style="width:100%;height:100%;background:transparent;--poster-color:transparent;"
+        style="width:100%;min-height:400px;height:100%;display:block;background:transparent;--poster-color:transparent;"
       >
       </model-viewer>
     `;

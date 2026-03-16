@@ -6,7 +6,7 @@ export default function ARViewPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "ar-active" | "no-ar">("loading");
   const [modelLoaded, setModelLoaded] = useState(false);
-  const modelSrc = "/models/dish_AR_model.glb";
+  const modelSrc = "/models/pizza.glb";
   const dishName = "Butter Chicken";
   const dishPrice = "₹495";
 
@@ -54,10 +54,10 @@ export default function ARViewPage() {
         exposure="1.1"
         ar
         ar-modes="webxr scene-viewer quick-look"
-        ar-scale="fixed"
-        scale="0.01 0.01 0.01"
+        ar-scale="auto"
+        ar-placement="floor"
         loading="eager"
-        style="width:100%;height:100%;background:transparent;--poster-color:transparent;"
+        style="width:100%;min-height:400px;height:100%;display:block;background:transparent;--poster-color:transparent;"
       >
         <button slot="ar-button" id="custom-ar-btn" style="
           position: absolute;
