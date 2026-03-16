@@ -54,7 +54,8 @@ export default function ARViewPage() {
         exposure="1.1"
         ar
         ar-modes="webxr scene-viewer quick-look"
-        ar-scale="auto"
+        ar-scale="fixed"
+        scale="0.01 0.01 0.01"
         loading="eager"
         style="width:100%;height:100%;background:transparent;--poster-color:transparent;"
       >

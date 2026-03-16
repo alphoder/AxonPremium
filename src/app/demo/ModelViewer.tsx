@@ -59,7 +59,7 @@ export default function ModelViewer({
     if (!loaded || !containerRef.current) return;
 
     const arAttrs = arEnabled
-      ? `ar ar-modes="webxr scene-viewer quick-look"`
+      ? `ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" scale="0.01 0.01 0.01"`
       : "";
 
     containerRef.current.innerHTML = `
