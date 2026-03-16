@@ -7,11 +7,12 @@ export default function ARViewPage() {
   const [status, setStatus] = useState<"loading" | "ready" | "ar-active">("loading");
   const [modelLoaded, setModelLoaded] = useState(false);
 
+  // Use plain pizza for web preview (HTML hotspot handles the card)
+  // pizza-ar.glb (with baked card) is used for Scene Viewer/Quick Look AR
   const modelSrc = "/models/pizza.glb";
+  const arModelSrc = "/models/pizza-ar.glb";
   const dishName = "Margherita Pizza";
-  const dishPrice = "₹495";
 
-  // Load model-viewer CDN
   useEffect(() => {
     if (customElements.get("model-viewer")) {
       setModelLoaded(true);
@@ -26,137 +27,85 @@ export default function ARViewPage() {
     document.head.appendChild(script);
   }, []);
 
-  // Inject model-viewer with hotspot annotations
   useEffect(() => {
     if (!modelLoaded || !containerRef.current) return;
 
-    // 16 inches = 0.4064 meters. ar-scale="fixed" preserves viewer scale in AR.
-    // We scale the model so it appears as 16" diameter on a real surface.
     containerRef.current.innerHTML = `
       <style>
-        /* ---- Info Card Hotspot ---- */
-        .hotspot-card {
-          --mv-hotspot-color: transparent;
-          display: block;
-          width: min(260px, 55vw);
-          pointer-events: auto;
-          transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1);
-        }
-        .hotspot-card.hidden-card {
-          opacity: 0 !important;
-          transform: translateY(8px) scale(0.95) !important;
-          pointer-events: none !important;
-        }
-
-        /* ---- Connector Arrow ---- */
-        .connector-hotspot {
-          --mv-hotspot-color: transparent;
-          display: block;
+        .info-card-hotspot {
+          position: relative;
           pointer-events: none;
-          transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1);
+          transform: translate(-80%, 0%);
         }
-        .connector-hotspot.hidden-card {
-          opacity: 0 !important;
-        }
-
-        /* ---- Card Internals ---- */
-        .ar-card {
-          background: rgba(10, 10, 18, 0.75);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(201,169,110,0.2);
+        .info-card {
+          width: 240px;
+          background: rgba(12, 12, 20, 0.94);
+          border: 1px solid rgba(201, 169, 110, 0.3);
           border-radius: 16px;
-          padding: 16px 18px;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 60px rgba(201,169,110,0.06);
+          padding: 12px;
           color: white;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+          box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(201,169,110,0.08);
+          backdrop-filter: blur(20px);
         }
-        .ar-card .badge-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
-        .ar-card .veg-badge {
-          display: inline-flex; align-items: center; gap: 5px;
-          background: rgba(34,139,34,0.2); border: 1.5px solid #22c55e;
-          border-radius: 6px; padding: 3px 10px; font-size: 10px;
-          font-weight: 700; color: #4ade80; text-transform: uppercase; letter-spacing: 0.5px;
+        .info-card .badges { display: flex; gap: 6px; margin-bottom: 10px; }
+        .info-card .badge {
+          display: inline-flex; align-items: center; gap: 4px;
+          padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;
         }
-        .ar-card .veg-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; }
-        .ar-card .size-badge {
-          display: inline-flex; align-items: center;
-          background: rgba(201,169,110,0.12); border: 1.5px solid rgba(201,169,110,0.35);
-          border-radius: 6px; padding: 3px 10px; font-size: 10px;
-          font-weight: 700; color: #C9A96E;
+        .info-card .badge-veg {
+          background: rgba(34,139,34,0.25); border: 1px solid rgba(34,197,94,0.5); color: #4ade80;
         }
-        .ar-card .dish-name {
-          font-size: 20px; font-weight: 700; color: #fff; margin: 0;
-          font-family: Georgia, 'Times New Roman', serif; letter-spacing: -0.3px;
+        .info-card .badge-size {
+          background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.35); color: #C9A96E;
         }
-        .ar-card .dish-price { font-size: 16px; font-weight: 600; color: #C9A96E; }
-        .ar-card .dish-subtitle { font-size: 11px; color: rgba(255,255,255,0.35); font-style: italic; margin-top: 2px; }
-        .ar-card .divider {
+        .info-card .title-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+        .info-card .dish-name { font-size: 15px; font-weight: 700; font-family: Georgia, serif; }
+        .info-card .price { font-size: 14px; font-weight: 700; color: #C9A96E; }
+        .info-card .subtitle { font-size: 11px; color: rgba(255,255,255,0.35); font-style: italic; margin-bottom: 10px; }
+        .info-card .divider {
           height: 1px; margin: 10px 0;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
         }
-        .ar-card .section-title {
-          font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px;
-          color: rgba(255,255,255,0.3); margin-bottom: 6px; font-weight: 700;
+        .info-card .section-label {
+          font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.3);
+          letter-spacing: 1.5px; margin-bottom: 8px;
         }
-        .ar-card .ingredients { display: flex; flex-wrap: wrap; gap: 5px; }
-        .ar-card .ing-tag {
+        .info-card .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+        .info-card .tag {
+          padding: 4px 10px; border-radius: 12px; font-size: 10px;
           background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px; padding: 4px 10px; font-size: 10px; color: rgba(255,255,255,0.7);
+          color: rgba(255,255,255,0.65);
         }
-        .ar-card .nutrition-row { display: flex; justify-content: space-between; margin-top: 4px; }
-        .ar-card .nut-item { text-align: center; flex: 1; }
-        .ar-card .nut-val { font-size: 16px; font-weight: 700; color: #fff; }
-        .ar-card .nut-label { font-size: 8px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* ---- Connector SVG ---- */
-        .connector-line {
-          width: 2px; height: 60px;
-          background: linear-gradient(180deg, rgba(201,169,110,0.5), rgba(201,169,110,0));
-          margin: 0 auto;
-        }
+        .info-card .nutrition { display: flex; justify-content: space-between; text-align: center; }
+        .info-card .nutr-item .val { font-size: 15px; font-weight: 700; color: white; }
+        .info-card .nutr-item .lbl { font-size: 7px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
+        .info-card .powered { text-align: center; font-size: 8px; color: rgba(201,169,110,0.35); margin-top: 10px; }
         .connector-dot {
-          width: 8px; height: 8px; border-radius: 50%;
-          background: #C9A96E; margin: 0 auto;
-          box-shadow: 0 0 12px rgba(201,169,110,0.6);
-          animation: pulse-dot 2s ease-in-out infinite;
+          width: 8px; height: 8px; border-radius: 50%; margin: 0 auto;
+          background: #C9A96E;
+          box-shadow: 0 0 8px rgba(201,169,110,0.6);
         }
-        @keyframes pulse-dot {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.4); opacity: 0.6; }
-        }
-
-        /* ---- AR Button ---- */
-        #custom-ar-btn {
-          position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-          background: linear-gradient(135deg, #C9A96E, #B08D57);
-          color: white; border: none; border-radius: 14px;
-          padding: 14px 28px; font-size: 14px; font-weight: 600;
-          cursor: pointer; box-shadow: 0 4px 24px rgba(201,169,110,0.4);
-          display: flex; align-items: center; gap: 8px; white-space: nowrap; z-index: 10;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        }
-
-        /* ---- Powered badge ---- */
-        .powered-badge {
-          position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%);
-          font-size: 9px; color: rgba(255,255,255,0.2); white-space: nowrap;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        .connector-line {
+          width: 1.5px; height: 20px; margin: 0 auto;
+          background: linear-gradient(180deg, rgba(201,169,110,0.15), rgba(201,169,110,0.5));
         }
       </style>
 
       <model-viewer
         id="ar-viewer"
         src="${modelSrc}"
+        ios-src="${arModelSrc}"
         alt="3D model of ${dishName}"
         camera-controls
         disable-zoom
         auto-rotate
         auto-rotate-delay="0"
         rotation-per-second="8deg"
-        camera-orbit="20deg 60deg 0.8m"
-        min-camera-orbit="auto auto 0.8m"
-        max-camera-orbit="auto auto 0.8m"
+        camera-orbit="0deg 75deg 0.28m"
+        min-camera-orbit="auto auto 0.28m"
+        max-camera-orbit="auto auto 0.28m"
+        camera-target="0m 0.03m 0m"
         field-of-view="45deg"
         min-field-of-view="45deg"
         max-field-of-view="45deg"
@@ -172,108 +121,67 @@ export default function ARViewPage() {
         loading="eager"
         style="width:100%;height:100%;display:block;background:transparent;--poster-color:transparent;"
       >
-        <!-- Connector dot hotspot (at pizza edge) -->
-        <div class="connector-hotspot" slot="hotspot-connector" data-position="0.08 0.015 -0.08" data-normal="0 1 0">
-          <div class="connector-dot"></div>
-          <div class="connector-line"></div>
-        </div>
+        <button slot="ar-button" id="custom-ar-btn" style="display:none;"></button>
 
-        <!-- Info card hotspot (floating above-right of pizza) -->
-        <div class="hotspot-card" slot="hotspot-card" data-position="0.22 0.12 -0.05" data-normal="0 1 0">
-          <div class="ar-card">
-            <div class="badge-row">
-              <span class="veg-badge"><span class="veg-dot"></span> VEG</span>
-              <span class="size-badge">16" Large</span>
-            </div>
-            <div style="display:flex;align-items:baseline;justify-content:space-between;">
-              <h2 class="dish-name">${dishName}</h2>
-              <span class="dish-price">${dishPrice}</span>
-            </div>
-            <div class="dish-subtitle">Classic Neapolitan Style</div>
-            <div class="divider"></div>
-            <div class="section-title">Ingredients</div>
-            <div class="ingredients">
-              <span class="ing-tag">Pizza Dough</span>
-              <span class="ing-tag">San Marzano Tomatoes</span>
-              <span class="ing-tag">Fresh Mozzarella</span>
-              <span class="ing-tag">Olive Oil</span>
-              <span class="ing-tag">Fresh Basil</span>
-              <span class="ing-tag">Sea Salt</span>
-              <span class="ing-tag">Garlic</span>
-              <span class="ing-tag">Oregano</span>
-            </div>
-            <div class="divider"></div>
-            <div class="section-title">Nutrition (per slice)</div>
-            <div class="nutrition-row">
-              <div class="nut-item"><div class="nut-val">272</div><div class="nut-label">Calories</div></div>
-              <div class="nut-item"><div class="nut-val">12g</div><div class="nut-label">Protein</div></div>
-              <div class="nut-item"><div class="nut-val">10g</div><div class="nut-label">Fat</div></div>
-              <div class="nut-item"><div class="nut-val">33g</div><div class="nut-label">Carbs</div></div>
+        <!-- HTML hotspot: always faces user, never rotates -->
+        <div slot="hotspot-card"
+             data-position="-0.04 0.04 0"
+             data-normal="0 0 1"
+             data-visibility-attribute="visible"
+        >
+          <div class="info-card-hotspot">
+            <div class="connector-dot"></div>
+            <div class="connector-line"></div>
+            <div class="info-card">
+              <div class="badges">
+                <span class="badge badge-veg"><span style="color:#22c55e;">●</span> VEG</span>
+                <span class="badge badge-size">16" Large</span>
+              </div>
+              <div class="title-row">
+                <span class="dish-name">Margherita Pizza</span>
+                <span class="price">₹495</span>
+              </div>
+              <div class="subtitle">Classic Neapolitan Style</div>
+              <div class="divider"></div>
+              <div class="section-label">INGREDIENTS</div>
+              <div class="tags">
+                <span class="tag">Pizza Dough</span>
+                <span class="tag">San Marzano Tomatoes</span>
+                <span class="tag">Fresh Mozzarella</span>
+                <span class="tag">Olive Oil</span>
+                <span class="tag">Fresh Basil</span>
+                <span class="tag">Sea Salt</span>
+                <span class="tag">Garlic</span>
+                <span class="tag">Oregano</span>
+              </div>
+              <div class="divider"></div>
+              <div class="section-label">NUTRITION (PER SLICE)</div>
+              <div class="nutrition">
+                <div class="nutr-item"><div class="val">272</div><div class="lbl">CALORIES</div></div>
+                <div class="nutr-item"><div class="val">12g</div><div class="lbl">PROTEIN</div></div>
+                <div class="nutr-item"><div class="val">10g</div><div class="lbl">FAT</div></div>
+                <div class="nutr-item"><div class="val">33g</div><div class="lbl">CARBS</div></div>
+              </div>
+              <div class="powered">Powered by Axon Aura</div>
             </div>
           </div>
         </div>
-
-        <!-- AR placement button -->
-        <button slot="ar-button" id="custom-ar-btn">
-          📸 Place on your table
-        </button>
-
-        <div class="powered-badge">Powered by Axon Aura</div>
       </model-viewer>
     `;
 
     setStatus("ready");
 
-    // ---- Interaction hide/show logic ----
-    const viewer = document.getElementById("ar-viewer") as HTMLElement;
-    if (!viewer) return;
-
-    // Prevent zoom (pizza stays fixed size)
-    viewer.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
-
-    let interactionTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const cardHotspot = viewer.querySelector('[slot="hotspot-card"]');
-    const connectorHotspot = viewer.querySelector('[slot="hotspot-connector"]');
-
-    const hideCard = () => {
-      cardHotspot?.classList.add("hidden-card");
-      connectorHotspot?.classList.add("hidden-card");
-      if (interactionTimer) clearTimeout(interactionTimer);
-    };
-
-    const showCardDelayed = () => {
-      if (interactionTimer) clearTimeout(interactionTimer);
-      interactionTimer = setTimeout(() => {
-        cardHotspot?.classList.remove("hidden-card");
-        connectorHotspot?.classList.remove("hidden-card");
-      }, 2000);
-    };
-
-    // Mouse interactions
-    viewer.addEventListener("pointerdown", (e) => {
-      // Only hide if interacting with the model (not buttons)
-      if ((e.target as HTMLElement).tagName === "BUTTON") return;
-      hideCard();
-    });
-    viewer.addEventListener("pointerup", showCardDelayed);
-
-    // Touch interactions
-    viewer.addEventListener("touchstart", (e) => {
-      if ((e.target as HTMLElement).tagName === "BUTTON") return;
-      hideCard();
-    }, { passive: true });
-    viewer.addEventListener("touchend", showCardDelayed);
+    const viewer = document.getElementById("ar-viewer");
+    if (viewer) {
+      viewer.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
+    }
 
     // Auto-trigger AR on mobile
     const isAndroid = /android/i.test(navigator.userAgent);
     const isIOS = /iphone|ipad/i.test(navigator.userAgent);
     if (isAndroid || isIOS) {
       setTimeout(() => {
-        const v = viewer as HTMLElement & {
-          activateAR?: () => Promise<void>;
-          canActivateAR?: boolean;
-        };
+        const v = viewer as HTMLElement & { activateAR?: () => Promise<void>; canActivateAR?: boolean };
         if (v?.canActivateAR && v?.activateAR) {
           v.activateAR().then(() => setStatus("ar-active")).catch(() => setStatus("ready"));
         }
@@ -281,19 +189,15 @@ export default function ARViewPage() {
     }
   }, [modelLoaded]);
 
-  // Manual AR launch
   const handleManualAR = () => {
-    const viewer = document.getElementById("ar-viewer") as HTMLElement & {
-      activateAR?: () => Promise<void>;
-      canActivateAR?: boolean;
-    };
+    const viewer = document.getElementById("ar-viewer") as HTMLElement & { activateAR?: () => Promise<void>; canActivateAR?: boolean };
     if (viewer?.canActivateAR && viewer?.activateAR) {
       viewer.activateAR();
       return;
     }
     const isAndroid = /android/i.test(navigator.userAgent);
     if (isAndroid) {
-      const fullUrl = `${window.location.origin}${modelSrc}`;
+      const fullUrl = `${window.location.origin}${arModelSrc}`;
       window.location.href = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(fullUrl)}&mode=ar_preferred&title=${encodeURIComponent(dishName)}#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;end;`;
       return;
     }
@@ -302,7 +206,6 @@ export default function ARViewPage() {
 
   return (
     <div className="fixed inset-0 bg-[#060608] overflow-hidden">
-      {/* Table surface gradient */}
       <div
         className="absolute bottom-0 left-0 right-0 pointer-events-none z-[1]"
         style={{
@@ -311,7 +214,6 @@ export default function ARViewPage() {
         }}
       />
 
-      {/* Full-screen model-viewer */}
       <div ref={containerRef} className="absolute inset-0 z-0">
         {!modelLoaded && (
           <div className="flex h-full w-full items-center justify-center">
@@ -333,13 +235,10 @@ export default function ARViewPage() {
             <span style={{ fontFamily: "Georgia, serif" }}>A</span>
           </div>
           <div>
-            <p className="text-[12px] font-semibold text-white" style={{ fontFamily: "Georgia, serif" }}>
-              Axon Aura
-            </p>
+            <p className="text-[12px] font-semibold text-white" style={{ fontFamily: "Georgia, serif" }}>Axon Aura</p>
             <p className="text-[8px] tracking-[1.5px] text-white/30 uppercase">AR Menu</p>
           </div>
         </div>
-
         <div className="flex items-center gap-1.5 rounded-full bg-black/50 backdrop-blur-md px-3 py-1.5 border border-white/[0.06]">
           <span className={`h-[5px] w-[5px] rounded-full ${status === "ar-active" ? "bg-[#8BA88E] animate-pulse" : status === "ready" ? "bg-[#C9A96E]" : "bg-white/30 animate-pulse"}`} />
           <span className="text-[10px] font-medium text-white/50">
@@ -348,7 +247,7 @@ export default function ARViewPage() {
         </div>
       </div>
 
-      {/* Bottom AR launch (only shown as fallback if the slot button isn't visible) */}
+      {/* Bottom AR button */}
       <div className="absolute bottom-5 left-4 right-4 z-[60]">
         <button
           onClick={handleManualAR}
@@ -365,15 +264,6 @@ export default function ARViewPage() {
           View on your table
         </button>
       </div>
-
-      {/* Interaction hint */}
-      {modelLoaded && (
-        <div className="absolute bottom-[68px] left-0 right-0 flex justify-center z-[50] pointer-events-none">
-          <span className="rounded-full bg-black/50 backdrop-blur px-3 py-1 text-[10px] text-white/25">
-            Drag to rotate · Card follows the dish
-          </span>
-        </div>
-      )}
     </div>
   );
 }
