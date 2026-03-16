@@ -9,15 +9,15 @@ function generateQR(text: string, size: number): string {
 }
 
 export default function QRCodePage() {
-  const [origin, setOrigin] = useState("");
   const [copied, setCopied] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const [origin, setOrigin] = useState("https://axon-aura.vercel.app");
 
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
 
-  const arUrl = `${origin}/ar`;
+  const arUrl = "https://axon-aura.vercel.app/ar";
   const qrSize = 300;
 
   const handleCopy = () => {

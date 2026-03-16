@@ -27,7 +27,7 @@ export const dishes: Dish[] = [
     allergens: "Dairy, Nuts",
     type: "Non-Veg",
     gradient: "linear-gradient(135deg, #C9A96E, #B08D57)",
-    modelSrc: "/models/pizza.glb",
+    modelSrc: "/models/dish_AR_model.glb",
   },
   {
     id: "hyderabadi-biryani",

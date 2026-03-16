@@ -6,7 +6,7 @@ export default function ARViewPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "ar-active" | "no-ar">("loading");
   const [modelLoaded, setModelLoaded] = useState(false);
-  const modelSrc = "/models/pizza.glb";
+  const modelSrc = "/models/dish_AR_model.glb";
   const dishName = "Butter Chicken";
   const dishPrice = "₹495";
 
